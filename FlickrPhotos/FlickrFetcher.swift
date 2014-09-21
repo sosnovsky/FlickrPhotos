@@ -8,7 +8,16 @@
 
 import Foundation
 
-struct FlickrFetcher {
+class FlickrFetcher {
+  class var shared: FlickrFetcher {
+    
+    struct Static {
+      static let instance : FlickrFetcher = FlickrFetcher()
+    }
+    
+    return Static.instance
+  }
+  
   let APIKey = FlickrAPIKey
   
   enum FlickrPhotoFormat: Int {
@@ -66,6 +75,5 @@ struct FlickrFetcher {
   func URLforPhoto(photo: [String:AnyObject], format: FlickrPhotoFormat) -> NSURL {
     return NSURL(string: urlStringForPhoto(photo, format: format))!
   }
-  
 }
 

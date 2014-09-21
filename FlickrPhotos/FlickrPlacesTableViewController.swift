@@ -1,5 +1,5 @@
 //
-//  FlickrPlacesTVC.swift
+//  FlickrPlacesTableViewController.swift
 //  FlickrPhotos
 //
 //  Created by Roma Sosnovsky on 6/14/14.
@@ -11,27 +11,15 @@ import UIKit
 class FlickrPlacesTableViewController: UITableViewController {
   
   var places = [String:NSMutableArray]()
-  let flickrClient = FlickrFetcher()
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    title = "Top Places"
-    updateTableContentInset()
     fetchPlaces()
-  }
-  
-  func updateTableContentInset() {
-    if let navController = navigationController? {
-      let navBarFrame = navController.navigationBar.frame
-      let topInset = navBarFrame.height + navBarFrame.origin.y
-      let bottomInset = tabBarController?.tabBar.frame.height
-      tableView.contentInset = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset!, right: 0)
-    }
   }
   
   func fetchPlaces() {
     refreshControl?.beginRefreshing()
-    let placesUrl = flickrClient.URLforTopPlaces()
+    let placesUrl = FlickrFetcher.shared.URLforTopPlaces()
     
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), {
       let data = NSData(contentsOfURL: placesUrl)
@@ -63,10 +51,6 @@ class FlickrPlacesTableViewController: UITableViewController {
     }
     
     tableView.reloadData()
-  }
-  
-  override func didRotateFromInterfaceOrientation(fromInterfaceOrientation: UIInterfaceOrientation) {
-    updateTableContentInset()
   }
   
   // #pragma mark - Table view data source

@@ -9,38 +9,21 @@
 import UIKit
 
 class RecentPhotosTableViewController: PhotosTableViewController {
-
-  init() {
-    super.init(savePhotos: false)
-  }
   
-  required init(coder aDecoder: NSCoder) {
+  override init(coder aDecoder: NSCoder) {
     super.init(coder: aDecoder)
+    savePhotos = false
   }
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    updateTableContentInset()
+  override func viewDidAppear(animated: Bool) {
+    super.viewDidAppear(animated)
+    fetchPhotos()
   }
-
   
   override func fetchPhotos() {
     let userDefaults = NSUserDefaults.standardUserDefaults()
     if let recentPhotos = userDefaults.objectForKey("recentPhotos") as? [[String:AnyObject]] {
       updatePhotos(recentPhotos)
-    }
-  }
-  
-  override func didRotateFromInterfaceOrientation(fromInterfaceOrientation: UIInterfaceOrientation) {
-    updateTableContentInset()
-  }
-  
-  func updateTableContentInset() {
-    if let navController = navigationController? {
-      let navBarFrame = navController.navigationBar.frame
-      let topInset = navBarFrame.height + navBarFrame.origin.y
-      let bottomInset = tabBarController?.tabBar.frame.height
-      tableView.contentInset = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset!, right: 0)
     }
   }
   

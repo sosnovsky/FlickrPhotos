@@ -10,20 +10,9 @@ import UIKit
 
 class PhotosTableViewController: UITableViewController {
 
-  let flickrClient = FlickrFetcher()
   var photos = [[String:AnyObject]]()
   var placeId = ""
-  var photoViewController: PhotoViewController? = nil
   var savePhotos = true
-  
-  init(savePhotos: Bool) {
-    self.savePhotos = savePhotos
-    super.init()
-  }
-
-  required init(coder aDecoder: NSCoder) {
-    super.init(coder: aDecoder)
-  }
   
   override func awakeFromNib() {
     super.awakeFromNib()
@@ -31,11 +20,6 @@ class PhotosTableViewController: UITableViewController {
       clearsSelectionOnViewWillAppear = false
       preferredContentSize = CGSize(width: 320.0, height: 600.0)
     }
-  }
-  
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    fetchPhotos()
   }
   
   func fetchPhotos() {}
@@ -76,13 +60,13 @@ class PhotosTableViewController: UITableViewController {
       if let indexPath = tableView.indexPathForSelectedRow() {
         let photo = photos[indexPath.row]
         let title = photo["title"]! as? String
-        let photoUrl: NSURL = flickrClient.URLforPhoto(photo, format: .Large)
+        let photoUrl: NSURL = FlickrFetcher.shared.URLforPhoto(photo, format: .Large)
         let controller = (segue.destinationViewController as UINavigationController).topViewController as PhotoViewController
         controller.imageUrl = photoUrl
         controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem()
         controller.navigationItem.leftItemsSupplementBackButton = true
         controller.title = title
-        
+
         if savePhotos {
           savePhotoToRecents(photo)
         }
@@ -91,6 +75,25 @@ class PhotosTableViewController: UITableViewController {
     }
   }
   
-  func savePhotoToRecents(photo: [String:AnyObject]) { }
+  func savePhotoToRecents(photo: [String:AnyObject]) {
+    let userDefaults = NSUserDefaults.standardUserDefaults()
+    var userPhotos = [photo]
+    let photoId = photo["id"]! as String
+    
+    if var recentPhotos = userDefaults.objectForKey("recentPhotos") as? [[String:AnyObject]] {
+      let photoExists = contains(recentPhotos, { (item: [String:AnyObject]) -> Bool in
+        let itemId = item["id"]! as String
+        return itemId == photoId
+      })
+      if !photoExists {
+        recentPhotos.append(photo)
+      }
+      userPhotos = recentPhotos
+    }
+    
+    userDefaults.setValue(userPhotos, forKey: "recentPhotos")
+    userDefaults.synchronize()
+  }
+  
 
 }

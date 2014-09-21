@@ -1,5 +1,5 @@
 //
-//  PhotoVC.swift
+//  PhotoViewController.swift
 //  FlickrPhotos
 //
 //  Created by Roma Sosnovsky on 6/20/14.
@@ -13,7 +13,6 @@ class PhotoViewController: UIViewController, UIScrollViewDelegate {
   @IBOutlet weak var spinnerView: UIActivityIndicatorView!
   let scrollView = UIScrollView()
   let imageView = UIImageView()
-  var navbarOffset: CGFloat = 0
   
   var imageUrl: NSURL? {
     didSet {
