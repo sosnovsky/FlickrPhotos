@@ -27,7 +27,13 @@
                         </constraints>
                     </view>
                     <toolbarItems/>
-                    <navigationItem key="navigationItem" title="Title" id="OxG-Nv-bKv"/>
+                    <navigationItem key="navigationItem" title="Title" id="OxG-Nv-bKv">
+                        <barButtonItem key="rightBarButtonItem" title="Close" id="NGG-A4-fpA">
+                            <connections>
+                                <action selector="closePhoto:" destination="JEX-9P-axG" id="Ahn-TO-44m"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="spinnerView" destination="J4g-HE-jpX" id="dBt-dS-Yxa"/>
                     </connections>
@@ -274,6 +280,6 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="6S0-TO-JiA"/>
+        <segue reference="guB-8i-5k5"/>
     </inferredMetricsTieBreakers>
 </document>
