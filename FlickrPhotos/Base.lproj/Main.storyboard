@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6246" systemVersion="14A361c" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="H1p-Uh-vWS">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6249" systemVersion="14A361c" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="H1p-Uh-vWS">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6239"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6243"/>
     </dependencies>
     <scenes>
         <!--Photo-->
@@ -59,13 +59,13 @@
         <!--Top Places-->
         <scene sceneID="C40-5P-9zz">
             <objects>
-                <tableViewController title="Top Places" id="w6q-UG-DBZ" customClass="FlickrPlacesTableViewController" customModule="FlickrPhotos" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController title="Top Places" id="w6q-UG-DBZ" customClass="FlickrRegionsTableViewController" customModule="FlickrPhotos" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="ZCu-fh-AsR">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="flickrPlaceCell" textLabel="VOE-Ks-GfX" detailTextLabel="tQe-Yn-HcY" style="IBUITableViewCellStyleSubtitle" id="9lA-1V-BT7">
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="Region Cell" textLabel="VOE-Ks-GfX" detailTextLabel="tQe-Yn-HcY" style="IBUITableViewCellStyleSubtitle" id="9lA-1V-BT7">
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="9lA-1V-BT7" id="IBE-Iv-k4P">
                                     <autoresizingMask key="autoresizingMask"/>
@@ -94,7 +94,7 @@
                             <outlet property="delegate" destination="w6q-UG-DBZ" id="iNp-lh-fyI"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Top Places" id="JXr-pL-vgh"/>
+                    <navigationItem key="navigationItem" title="Top Regions" id="JXr-pL-vgh"/>
                     <refreshControl key="refreshControl" opaque="NO" multipleTouchEnabled="YES" contentMode="center" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" id="GZz-KR-C0j">
                         <autoresizingMask key="autoresizingMask"/>
                         <attributedString key="attributedTitle"/>
@@ -280,6 +280,6 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="guB-8i-5k5"/>
+        <segue reference="Tll-UG-LXB"/>
     </inferredMetricsTieBreakers>
 </document>
