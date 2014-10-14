@@ -7,24 +7,48 @@
 //
 
 import UIKit
+import CoreData
 
 class RecentPhotosTableViewController: PhotosTableViewController {
   
-  override init(coder aDecoder: NSCoder) {
-    super.init(coder: aDecoder)
-    savePhotos = false
-  }
-  
-  override func viewDidAppear(animated: Bool) {
-    super.viewDidAppear(animated)
-    fetchPhotos()
-  }
-  
-  override func fetchPhotos() {
-    let userDefaults = NSUserDefaults.standardUserDefaults()
-    if let recentPhotos = userDefaults.objectForKey("recentPhotos") as? [[String:AnyObject]] {
-      updatePhotos(recentPhotos)
+  override func viewWillAppear(animated: Bool) {
+    super.viewWillAppear(animated)
+    
+    var error: NSError? = nil
+    if !_fetchedResultsController!.performFetch(&error) {
+      println("Unresolved error \(error), \(error?.userInfo)")
+      abort()
     }
+  }
+  
+  // MARK: Fetched Results Controller
+  override var fetchedResultsController: NSFetchedResultsController {
+    if _fetchedResultsController != nil {
+      return _fetchedResultsController!
+    }
+    
+    let fetchRequest = NSFetchRequest()
+    
+    let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: self.managedObjectContext)
+    fetchRequest.entity = entity
+    
+    let recentSortDescriptor = NSSortDescriptor(key: "lastOpenTime", ascending: false)
+    let sortDescriptor = NSSortDescriptor(key: "uploadDate", ascending: false)
+    fetchRequest.sortDescriptors = [recentSortDescriptor, sortDescriptor]
+    
+    fetchRequest.predicate = NSPredicate(format: "lastOpenTime != nil")
+
+    let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext, sectionNameKeyPath: nil, cacheName: nil)
+    aFetchedResultsController.delegate = self
+    _fetchedResultsController = aFetchedResultsController
+    
+    var error: NSError? = nil
+    if !_fetchedResultsController!.performFetch(&error) {
+      println("Unresolved error \(error), \(error?.userInfo)")
+      abort()
+    }
+    
+    return _fetchedResultsController!
   }
   
 }

@@ -11,9 +11,19 @@ import CoreData
 
 class CoreDataTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
   
-  var managedObjectContext = CoreDataStackManager.sharedManager.managedObjectContext
+  lazy var managedObjectContext: NSManagedObjectContext = {
+    let moc = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
+    
+    moc.persistentStoreCoordinator = CoreDataStackManager.sharedManager.persistentStoreCoordinator
+    
+    return moc
+    }()
+  
+  lazy var flickrFetcher: FlickrFetcher = {
+    return FlickrFetcher.shared
+    }()
 
-  // MARK: - Table View
+  // MARK: - UITableViewDataSource
   
   override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
     return self.fetchedResultsController.sections?.count ?? 0
@@ -37,28 +47,17 @@ class CoreDataTableViewController: UITableViewController, NSFetchedResultsContro
     self.tableView.beginUpdates()
   }
   
-  func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
+  func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
     switch type {
     case .Insert:
-      self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
+      tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
     case .Delete:
-      self.tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
-    default:
-      return
-    }
-  }
-  
-  func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath) {
-    switch type {
-    case .Insert:
-      tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Fade)
-    case .Delete:
-      tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+      tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
     case .Update:
-      self.configureCell(tableView.cellForRowAtIndexPath(indexPath)!, atIndexPath: indexPath)
+      self.configureCell(tableView.cellForRowAtIndexPath(indexPath!)!, atIndexPath: indexPath!)
     case .Move:
-      tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-      tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Fade)
+      tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
+      tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
     default:
       return
     }

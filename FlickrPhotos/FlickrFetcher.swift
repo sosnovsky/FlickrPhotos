@@ -75,5 +75,10 @@ class FlickrFetcher {
   func URLforPhoto(photo: [String:AnyObject], format: FlickrPhotoFormat) -> NSURL {
     return NSURL(string: urlStringForPhoto(photo, format: format))!
   }
+
+  func URLforInformationAboutPlace(flickrPlaceId: String) -> NSURL {
+    return URLForQuery("https://api.flickr.com/services/rest/?method=flickr.places.getInfo&place_id=\(flickrPlaceId)")
+  }
+  
 }
 

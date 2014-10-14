@@ -7,28 +7,40 @@
 //
 
 import UIKit
+import CoreData
 
 class FlickrPhotosTableViewController: PhotosTableViewController {
   
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    fetchPhotos()
-  }
+  var region: Region?
   
-  override func fetchPhotos() {
-    refreshControl?.beginRefreshing()
-    let photosUrl = FlickrFetcher.shared.URLforPhotosInPlace(placeId, maxResults: 50)
+  // MARK: Fetched Results Controller
+  override var fetchedResultsController: NSFetchedResultsController {
+    if _fetchedResultsController != nil {
+      return _fetchedResultsController!
+    }
     
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), {
-      let data = NSData(contentsOfURL: photosUrl)
-      let propertyListResults = NSJSONSerialization.JSONObjectWithData(data!, options: .MutableContainers, error: nil) as [String:AnyObject]
-      dispatch_async(dispatch_get_main_queue(), {
-        if let photosList: AnyObject = propertyListResults["photos"]?["photo"] {
-          self.updatePhotos(photosList as [[String:AnyObject]])
-        }
-        self.refreshControl?.endRefreshing()
-      })
-    })
+    let fetchRequest = NSFetchRequest()
+    let entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: self.managedObjectContext)
+    fetchRequest.entity = entity
+    
+    let sortDescriptor = NSSortDescriptor(key: "uploadDate", ascending: false)
+    fetchRequest.sortDescriptors = [sortDescriptor]
+    
+    let places = region?.places.allObjects
+    let placesIds = (places as [Place]).map { $0.id as String! }
+    fetchRequest.predicate = NSPredicate(format: "placeId in %@", argumentArray: [placesIds])
+    
+    let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext, sectionNameKeyPath: nil, cacheName: nil)
+    aFetchedResultsController.delegate = self
+    _fetchedResultsController = aFetchedResultsController
+    
+    var error: NSError? = nil
+    if !_fetchedResultsController!.performFetch(&error) {
+      println("Unresolved error \(error), \(error?.userInfo)")
+      abort()
+    }
+    
+    return _fetchedResultsController!
   }
   
 }

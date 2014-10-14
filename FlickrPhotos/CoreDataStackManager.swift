@@ -13,12 +13,6 @@ import CoreData
 
 class CoreDataStackManager {
   
-  // MARK: Types
-  
-  private struct Constants {
-    static let mainStoreFileName = "FlickrPhotos"
-  }
-  
   // MARK: Properties
   
   class var sharedManager: CoreDataStackManager {
@@ -30,7 +24,7 @@ class CoreDataStackManager {
   }
   
   lazy var applicationDocumentsDirectory: NSURL = {
-    // The directory the application uses to store the Core Data store file. This code uses a directory named "roma.sosnovsky.MasterDetailCoreData" in the application's documents Application Support directory.
+    // The directory the application uses to store the Core Data store file. This code uses a directory named "roma.sosnovsky.FlickrPhotos" in the application's documents Application Support directory.
     let urls = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
     return urls[urls.count-1] as NSURL
     }()
@@ -56,8 +50,6 @@ class CoreDataStackManager {
       dict[NSLocalizedFailureReasonErrorKey] = failureReason
       dict[NSUnderlyingErrorKey] = error
       error = NSError(domain: "YOUR_ERROR_DOMAIN", code: 9999, userInfo: dict)
-      // Replace this with code to handle the error appropriately.
-      // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
       NSLog("Unresolved error \(error), \(error!.userInfo)")
       abort()
     }
@@ -78,7 +70,7 @@ class CoreDataStackManager {
   
   /// URL for the main Core Data store file.
   lazy var storeURL: NSURL = {
-      return self.applicationDocumentsDirectory.URLByAppendingPathComponent(Constants.mainStoreFileName)
+      return self.applicationDocumentsDirectory.URLByAppendingPathComponent("FlickrPhotos")
     }()
   
   // MARK: - Core Data Saving support
