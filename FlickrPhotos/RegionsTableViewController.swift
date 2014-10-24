@@ -11,15 +11,20 @@ import CoreData
 
 class RegionsTableViewController: CoreDataTableViewController {
   
-  // MARK: Properties
-  
-  private var regions = [Region]()
-
-  // MARK: View Life Cycle
+  override init(coder aDecoder: NSCoder) {
+    super.init(coder: aDecoder)
+    
+    fetchRequest.entity = NSEntityDescription.entityForName("Region", inManagedObjectContext: self.managedObjectContext)
+    
+    let sortDescriptor = NSSortDescriptor(key: "photographersCount", ascending: false)
+    fetchRequest.sortDescriptors = [sortDescriptor]
+    
+    cellIdentifier = "RegionCell"
+  }
 
   override func viewDidLoad() {
     super.viewDidLoad()
-//    fetchRecentGeoreferencedPhotos()
+    fetchRecentGeoreferencedPhotos()
   }
   
   // MARK: Core Data Batching
@@ -30,7 +35,11 @@ class RegionsTableViewController: CoreDataTableViewController {
     let sessionConfiguration = NSURLSessionConfiguration.ephemeralSessionConfiguration()
     let session = NSURLSession(configuration: sessionConfiguration)
     
+    UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+    
     let task = session.dataTaskWithURL(jsonURL) { data, response, error in
+      
+      UIApplication.sharedApplication().networkActivityIndicatorVisible = false
       
       if error != nil {
         println("Error connecting: \(error.description)")
@@ -48,12 +57,10 @@ class RegionsTableViewController: CoreDataTableViewController {
         return
       }
       
-      var photos = jsonDictionary!["photos"]!["photo"]! as [[String: AnyObject]]
-
-      let matchingPhotoRequest = NSFetchRequest(entityName: "Photo")
-      
-      // Get the ids for each of the photo and store them in an array.
+      let photos = jsonDictionary!["photos"]!["photo"]! as [[String: AnyObject]]
       let ids = photos.map { $0["id"]! as String }
+      
+      let matchingPhotoRequest = NSFetchRequest(entityName: "Photo")
       matchingPhotoRequest.predicate = NSPredicate(format: "id in %@", argumentArray: [ids])
       
       let matchingPhotos = self.managedObjectContext.executeFetchRequest(matchingPhotoRequest, error: &anyError) as? [Photo]
@@ -62,8 +69,7 @@ class RegionsTableViewController: CoreDataTableViewController {
         fatalError("Fetch failed.")
         return
       }
-      
-      // Create a dictionary to map from a code to the corresponding matched quake.
+
       let matchingPhotosIds = matchingPhotos!.map { $0.id as String }
       var placesData = [[String: String]]()
       
@@ -104,7 +110,10 @@ class RegionsTableViewController: CoreDataTableViewController {
       let placeId = place["place_id"]! as String
       let url = flickrFetcher.URLforInformationAboutPlace(placeId)
       let session = NSURLSession(configuration: NSURLSessionConfiguration.ephemeralSessionConfiguration())
+      UIApplication.sharedApplication().networkActivityIndicatorVisible = true
       let task = session.dataTaskWithURL(url) { data, response, error in
+        UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+        
         if data == nil {
           println("Error connecting: \(error)")
           fatalError("Couldn't create connection to server.")
@@ -159,7 +168,7 @@ class RegionsTableViewController: CoreDataTableViewController {
     
     var anyError: NSError?
     
-    if !self.managedObjectContext.save(&anyError) {
+    if !managedObjectContext.save(&anyError) {
       println("Error saving batch: \(anyError)")
       fatalError("Saving batch failed.")
       return
@@ -168,22 +177,12 @@ class RegionsTableViewController: CoreDataTableViewController {
   
   // MARK: Convenience
   
-  /// Fetch quakes ordered in time and reload the table view.
   private func reloadTableView(sender: AnyObject?) {
-    let request = NSFetchRequest(entityName: "Region")
-    request.sortDescriptors = [NSSortDescriptor(key: "photographersCount", ascending: false)]
-    
-    var anyError: NSError?
-    
-    let fetchedRegions = self.managedObjectContext.executeFetchRequest(request, error: &anyError)
-    
-    if fetchedRegions == nil {
-      println("Error fetching: \(anyError)")
-      fatalError("Fetch failed.")
-      return
+    var error: NSError? = nil
+    if !_fetchedResultsController!.performFetch(&error) {
+      println("Unresolved error \(error), \(error?.userInfo)")
+      abort()
     }
-    
-    regions = fetchedRegions as [Region]
     
     tableView.reloadData()
   }
@@ -192,61 +191,22 @@ class RegionsTableViewController: CoreDataTableViewController {
   
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     if segue.identifier == "showRegionPhotos" {
-      if let indexPath = self.tableView.indexPathForSelectedRow() {
-        let region = self.fetchedResultsController.objectAtIndexPath(indexPath) as Region
+      if let indexPath = tableView.indexPathForSelectedRow() {
+        let region = fetchedResultsController.objectAtIndexPath(indexPath) as Region
         let controller = segue.destinationViewController as FlickrPhotosTableViewController
         controller.region = region
         controller.navigationItem.title = region.name
-        controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
+        controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem()
         controller.navigationItem.leftItemsSupplementBackButton = true
       }
     }
   }
   
   // MARK: Table View Controller
-  override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCellWithIdentifier("Region Cell", forIndexPath: indexPath) as UITableViewCell
-    self.configureCell(cell, atIndexPath: indexPath)
-    return cell
-  }
-  
   override func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
     let region = self.fetchedResultsController.objectAtIndexPath(indexPath) as Region
-    cell.textLabel?.text = region.name
+    cell.textLabel.text = region.name
     cell.detailTextLabel?.text = "\(region.photographersCount) photographers"
-  }
-  
-  // MARK: Fetched Results Controller
-  override var fetchedResultsController: NSFetchedResultsController {
-    if _fetchedResultsController != nil {
-      return _fetchedResultsController!
-    }
-
-    let fetchRequest = NSFetchRequest()
-    // Edit the entity name as appropriate.
-    let entity = NSEntityDescription.entityForName("Region", inManagedObjectContext: self.managedObjectContext)
-    fetchRequest.entity = entity
-
-    // Set the batch size to a suitable number.
-    fetchRequest.fetchBatchSize = 50
-
-    // Edit the sort key as appropriate.
-    let sortDescriptor = NSSortDescriptor(key: "photographersCount", ascending: false)
-    let sortDescriptors = [sortDescriptor]
-
-    fetchRequest.sortDescriptors = [sortDescriptor]
-
-    let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.managedObjectContext, sectionNameKeyPath: nil, cacheName: nil)
-    aFetchedResultsController.delegate = self
-    _fetchedResultsController = aFetchedResultsController
-
-    var error: NSError? = nil
-    if !_fetchedResultsController!.performFetch(&error) {
-      println("Unresolved error \(error), \(error?.userInfo)")
-      abort()
-    }
-
-    return _fetchedResultsController!
   }
   
 }

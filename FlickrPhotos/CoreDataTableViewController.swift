@@ -11,6 +11,8 @@ import CoreData
 
 class CoreDataTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
   
+  var cellIdentifier: String?
+  
   lazy var managedObjectContext: NSManagedObjectContext = {
     let moc = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
     
@@ -26,25 +28,48 @@ class CoreDataTableViewController: UITableViewController, NSFetchedResultsContro
   // MARK: - UITableViewDataSource
   
   override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-    return self.fetchedResultsController.sections?.count ?? 0
+    return fetchedResultsController.sections?.count ?? 0
   }
   
   override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    let sectionInfo = self.fetchedResultsController.sections![section] as NSFetchedResultsSectionInfo
+    let sectionInfo = fetchedResultsController.sections![section] as NSFetchedResultsSectionInfo
     return sectionInfo.numberOfObjects
+  }
+  
+  override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier!, forIndexPath: indexPath) as UITableViewCell
+    configureCell(cell, atIndexPath: indexPath)
+    return cell
   }
   
   func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) { }
   
   // MARK: - Fetched results controller
+  var _fetchedResultsController: NSFetchedResultsController? = nil
+  let fetchRequest = NSFetchRequest()
   
   var fetchedResultsController: NSFetchedResultsController {
+    if _fetchedResultsController != nil {
+      return _fetchedResultsController!
+    }
+    
+    fetchRequest.fetchBatchSize = 50
+    
+    let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: managedObjectContext, sectionNameKeyPath: nil, cacheName: nil)
+    aFetchedResultsController.delegate = self
+    _fetchedResultsController = aFetchedResultsController
+    
+    var error: NSError? = nil
+    if !_fetchedResultsController!.performFetch(&error) {
+      println("Unresolved error \(error), \(error?.userInfo)")
+      abort()
+    }
+    
     return _fetchedResultsController!
   }
-  var _fetchedResultsController: NSFetchedResultsController? = nil
   
   func controllerWillChangeContent(controller: NSFetchedResultsController) {
-    self.tableView.beginUpdates()
+    tableView.beginUpdates()
   }
   
   func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
@@ -54,7 +79,7 @@ class CoreDataTableViewController: UITableViewController, NSFetchedResultsContro
     case .Delete:
       tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
     case .Update:
-      self.configureCell(tableView.cellForRowAtIndexPath(indexPath!)!, atIndexPath: indexPath!)
+      configureCell(tableView.cellForRowAtIndexPath(indexPath!)!, atIndexPath: indexPath!)
     case .Move:
       tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
       tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
@@ -64,7 +89,7 @@ class CoreDataTableViewController: UITableViewController, NSFetchedResultsContro
   }
   
   func controllerDidChangeContent(controller: NSFetchedResultsController) {
-    self.tableView.endUpdates()
+    tableView.endUpdates()
   }
 
 }

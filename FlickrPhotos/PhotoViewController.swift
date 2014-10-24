@@ -66,7 +66,7 @@ class PhotoViewController: UIViewController, UIScrollViewDelegate {
     }
   }
   @IBAction func closePhoto(sender: UIBarButtonItem) {
-    self.dismissViewControllerAnimated(true, completion: {})
+    dismissViewControllerAnimated(true, completion: {})
   }
   
 }

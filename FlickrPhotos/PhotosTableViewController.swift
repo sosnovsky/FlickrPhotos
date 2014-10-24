@@ -7,28 +7,86 @@
 //
 
 import UIKit
+import CoreData
 
 class PhotosTableViewController: CoreDataTableViewController {
   
+  var imageDownloadsInProgress: [Int:PhotoDownloader]
+  
+  func terminateAllDownloads() {
+    for photoDownload in imageDownloadsInProgress.values {
+      photoDownload.cancelDownload()
+    }
+    imageDownloadsInProgress = [Int:PhotoDownloader]()
+  }
+  
+  override init(coder aDecoder: NSCoder) {
+    imageDownloadsInProgress = [Int:PhotoDownloader]()
+    super.init(coder: aDecoder)
+    fetchRequest.entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: managedObjectContext)
+    cellIdentifier = "PhotoCell"
+  }
+  
+  deinit {
+    terminateAllDownloads()
+  }
+  
+  override func didReceiveMemoryWarning() {
+    super.didReceiveMemoryWarning()
+    terminateAllDownloads()
+  }
+  
+  func startThumbnailDownload(photo: Photo, forIndexPath indexPath: NSIndexPath) {
+    if imageDownloadsInProgress[indexPath.row] == nil {
+      let photoDownloader = PhotoDownloader(photo: photo)
+      photoDownloader.completionHandler = {
+        let cell = self.tableView.cellForRowAtIndexPath(indexPath)
+        cell?.imageView.image = UIImage(data: photo.thumbnail)
+        self.imageDownloadsInProgress[indexPath.row] = nil
+      }
+      imageDownloadsInProgress[indexPath.row] = photoDownloader
+      photoDownloader.startDownload()
+    }
+  }
+  
+  func loadImagesForOnscreenRows() {
+    if fetchedResultsController.fetchedObjects?.count > 0 {
+      let visiblePaths = tableView.indexPathsForVisibleRows()
+      for indexPath in visiblePaths! as [NSIndexPath] {
+        let photo = fetchedResultsController.objectAtIndexPath(indexPath) as Photo
+        if photo.thumbnail.length == 0 {
+          startThumbnailDownload(photo, forIndexPath: indexPath)
+        }
+      }
+    }
+  }
+  
   override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
     let cell = tableView.dequeueReusableCellWithIdentifier("PhotoCell", forIndexPath: indexPath) as UITableViewCell
-    self.configureCell(cell, atIndexPath: indexPath)
+    configureCell(cell, atIndexPath: indexPath)
     return cell
   }
   
   override func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
-    let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as Photo
+    let photo = fetchedResultsController.objectAtIndexPath(indexPath) as Photo
     cell.detailTextLabel?.text = ""
-    let imageData = NSData(contentsOfURL: NSURL(string: photo.thumbnailURL)!, options: .DataReadingMappedIfSafe, error: nil)
-    let image = UIImage(data: imageData!)
-    cell.imageView?.image = image
+
     if !photo.title.isEmpty {
-      cell.textLabel?.text = photo.title
+      cell.textLabel.text = photo.title
       cell.detailTextLabel?.text = photo.subtitle
     } else if !photo.description.isEmpty {
-      cell.textLabel?.text = photo.description
+      cell.textLabel.text = photo.description
     } else {
-      cell.textLabel?.text = "Untitled"
+      cell.textLabel.text = "Untitled"
+    }
+    
+    if photo.thumbnail.length == 0 {
+      if !tableView.dragging && !tableView.decelerating {
+        startThumbnailDownload(photo, forIndexPath: indexPath)
+      }
+      cell.imageView.image = UIImage(named: "Placeholder")
+    } else {
+      cell.imageView.image = UIImage(data: photo.thumbnail)
     }
   }
   
@@ -37,9 +95,9 @@ class PhotosTableViewController: CoreDataTableViewController {
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     if segue.identifier == "showPhoto" {
       if let indexPath = tableView.indexPathForSelectedRow() {
-        let photo = self.fetchedResultsController.objectAtIndexPath(indexPath) as Photo
+        let photo = fetchedResultsController.objectAtIndexPath(indexPath) as Photo
         photo.lastOpenTime = NSDate()
-        self.managedObjectContext.save(nil)
+        managedObjectContext.save(nil)
         let controller = (segue.destinationViewController as UINavigationController).topViewController as PhotoViewController
         controller.title = photo.title
         controller.imageUrl = NSURL(string: photo.photoURL)
@@ -47,6 +105,16 @@ class PhotosTableViewController: CoreDataTableViewController {
         controller.navigationItem.leftItemsSupplementBackButton = true
       }
     }
+  }
+  
+  override func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    if !decelerate {
+      loadImagesForOnscreenRows()
+    }
+  }
+  
+  override func scrollViewDidEndDecelerating(scrollView: UIScrollView) {
+    loadImagesForOnscreenRows()
   }
 
 }
