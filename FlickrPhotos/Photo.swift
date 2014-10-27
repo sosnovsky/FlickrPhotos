@@ -27,7 +27,12 @@ class Photo: NSManagedObject {
 
 
 extension Photo {
-  func updateFromDictionary(photoDictionary: [String: AnyObject], context: NSManagedObjectContext) {
+  class func createFromDictionary(photoDictionary: [String: AnyObject], context: NSManagedObjectContext) {
+    let photo = NSEntityDescription.insertNewObjectForEntityForName("Photo", inManagedObjectContext: context) as Photo
+    photo.updateFromDictionary(photoDictionary)
+  }
+  
+  func updateFromDictionary(photoDictionary: [String: AnyObject]) {
     id = photoDictionary["id"]! as String
     title = photoDictionary["title"]! as String
     subtitle = photoDictionary["description"]!["_content"] as String
@@ -35,10 +40,10 @@ extension Photo {
     thumbnailURL = FlickrFetcher.shared.URLforPhoto(photoDictionary, format: .Square).absoluteString!
     
     let photographerName = photoDictionary["ownername"]! as String
-    whoTook = Photographer.withName(photographerName, context: context)
+    whoTook = Photographer.withName(photographerName, context: managedObjectContext!)
     
     placeId = photoDictionary["place_id"]! as String
-    place = Place.withId(placeId, context: context)
+    place = Place.withId(placeId, context: managedObjectContext!)
     
     let date = photoDictionary["dateupload"]! as NSString
     let timeInterval = NSTimeInterval(date.doubleValue)

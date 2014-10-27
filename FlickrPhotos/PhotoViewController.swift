@@ -31,7 +31,6 @@ class PhotoViewController: UIViewController, UIScrollViewDelegate {
     imageView.hidden = true
     
     scrollView.setTranslatesAutoresizingMaskIntoConstraints(false)
-    
     imageView.setTranslatesAutoresizingMaskIntoConstraints(false)
     
     var viewsDictionary: NSMutableDictionary = NSMutableDictionary()

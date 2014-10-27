@@ -71,7 +71,7 @@ class CoreDataTableViewController: UITableViewController, NSFetchedResultsContro
   func controllerWillChangeContent(controller: NSFetchedResultsController) {
     tableView.beginUpdates()
   }
-  
+
   func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
     switch type {
     case .Insert:
@@ -91,5 +91,10 @@ class CoreDataTableViewController: UITableViewController, NSFetchedResultsContro
   func controllerDidChangeContent(controller: NSFetchedResultsController) {
     tableView.endUpdates()
   }
+  
+//  func controllerDidChangeContent(controller: NSFetchedResultsController) {
+//    // In the simplest, most efficient, case, reload the table view.
+//    self.tableView.reloadData()
+//  }
 
 }

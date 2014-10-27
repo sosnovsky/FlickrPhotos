@@ -9,17 +9,20 @@
 import UIKit
 import CoreData
 
-class FlickrPhotosTableViewController: PhotosTableViewController {
+class RegionPhotosTableViewController: PhotosTableViewController {
   
   var region: Region? {
     didSet {
-      let sortDescriptor = NSSortDescriptor(key: "uploadDate", ascending: false)
-      fetchRequest.sortDescriptors = [sortDescriptor]
-      
-      let places = region?.places.allObjects
-      let placesIds = (places as [Place]).map { $0.id as String! }
+      let placesIds = (region!.places.allObjects as [Place]).map { $0.id as String! }
       fetchRequest.predicate = NSPredicate(format: "placeId in %@", argumentArray: [placesIds])
     }
+  }
+  
+  override init(coder aDecoder: NSCoder) {
+    super.init(coder: aDecoder)
+    
+    let sortDescriptor = NSSortDescriptor(key: "uploadDate", ascending: false)
+    fetchRequest.sortDescriptors = [sortDescriptor]
   }
 
   

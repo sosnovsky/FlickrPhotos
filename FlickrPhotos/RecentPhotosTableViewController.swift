@@ -23,12 +23,7 @@ class RecentPhotosTableViewController: PhotosTableViewController {
   
   override func viewWillAppear(animated: Bool) {
     super.viewWillAppear(animated)
-    
-    var error: NSError? = nil
-    if !_fetchedResultsController!.performFetch(&error) {
-      println("Unresolved error \(error), \(error?.userInfo)")
-      abort()
-    }
+    tableView.reloadData()
   }
   
 }

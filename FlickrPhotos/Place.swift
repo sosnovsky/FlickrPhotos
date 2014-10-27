@@ -10,11 +10,11 @@ import Foundation
 import CoreData
 
 class Place: NSManagedObject {
-
-    @NSManaged var id: String
-    @NSManaged var region: Region
-    @NSManaged var photos: NSSet
-
+  
+  @NSManaged var id: String
+  @NSManaged var region: Region
+  @NSManaged var photos: NSSet
+  
 }
 
 extension Place {

@@ -13,16 +13,11 @@ class PhotosTableViewController: CoreDataTableViewController {
   
   var imageDownloadsInProgress: [Int:PhotoDownloader]
   
-  func terminateAllDownloads() {
-    for photoDownload in imageDownloadsInProgress.values {
-      photoDownload.cancelDownload()
-    }
-    imageDownloadsInProgress = [Int:PhotoDownloader]()
-  }
-  
   override init(coder aDecoder: NSCoder) {
     imageDownloadsInProgress = [Int:PhotoDownloader]()
+    
     super.init(coder: aDecoder)
+    
     fetchRequest.entity = NSEntityDescription.entityForName("Photo", inManagedObjectContext: managedObjectContext)
     cellIdentifier = "PhotoCell"
   }
@@ -34,6 +29,13 @@ class PhotosTableViewController: CoreDataTableViewController {
   override func didReceiveMemoryWarning() {
     super.didReceiveMemoryWarning()
     terminateAllDownloads()
+  }
+  
+  func terminateAllDownloads() {
+    for photoDownload in imageDownloadsInProgress.values {
+      photoDownload.cancelDownload()
+    }
+    imageDownloadsInProgress = [Int:PhotoDownloader]()
   }
   
   func startThumbnailDownload(photo: Photo, forIndexPath indexPath: NSIndexPath) {
@@ -59,12 +61,6 @@ class PhotosTableViewController: CoreDataTableViewController {
         }
       }
     }
-  }
-  
-  override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCellWithIdentifier("PhotoCell", forIndexPath: indexPath) as UITableViewCell
-    configureCell(cell, atIndexPath: indexPath)
-    return cell
   }
   
   override func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {

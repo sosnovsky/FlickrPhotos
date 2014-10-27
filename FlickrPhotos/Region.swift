@@ -10,12 +10,12 @@ import Foundation
 import CoreData
 
 class Region: NSManagedObject {
-
-    @NSManaged var name: String
-    @NSManaged var photographersCount: NSNumber
-    @NSManaged var photographers: NSSet
-    @NSManaged var places: NSSet
-
+  
+  @NSManaged var name: String
+  @NSManaged var photographersCount: NSNumber
+  @NSManaged var photographers: NSSet
+  @NSManaged var places: NSSet
+  
 }
 
 extension Region {
